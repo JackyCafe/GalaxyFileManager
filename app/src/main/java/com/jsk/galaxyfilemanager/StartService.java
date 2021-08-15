@@ -34,8 +34,9 @@ public class StartService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("Jacky","onStart");
-        PeriodicWorkRequest work =
-                new PeriodicWorkRequest.Builder(FileManageWork.class, 1, TimeUnit.SECONDS)
+        //                new PeriodicWorkRequest.Builder(FileManageWork.class, 12, TimeUnit.HOURS)
+
+        PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(FileManageWork.class, 12, TimeUnit.HOURS)
                         .addTag(TAG_SYNC_DATA)
                         .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
                         .build();

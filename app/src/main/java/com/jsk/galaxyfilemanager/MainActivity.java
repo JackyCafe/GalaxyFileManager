@@ -14,13 +14,18 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
-    private  File path;
+    private File path;
+    private ViewGroup viewGroup;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -34,8 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tv = findViewById(R.id.tv);
         path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
-        tv.setText(path.getPath());
-
+        viewGroup = (ViewGroup) findViewById(R.id.vg);
         if(checkPermission()){
             readTheFiles();
             Log.v("FileManager","have argee permission");
@@ -90,9 +94,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void readTheFiles() {
         File files = new File(path.getPath());
+        StringBuilder sb = new StringBuilder();
         for(File f: files.listFiles()){
+            sb.append(f.getName()+"\n");
             Log.v("FileManager","file:"+f.getName());
         }
+        tv.setText(sb.toString());
         Log.v("FileManager","Done!");
 
 
@@ -110,5 +117,37 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void delete(View view) {
+        File files = new File(path.getPath());
+        tv.setText("");
+        for(File f: files.listFiles()){
+            Log.v("FileManager","file:"+f.getName());
+            int i = f.getName().lastIndexOf('.');
+            if (i > 0) {
+                String extension = f.getName().substring(i+1);
+                if(extension.equals("pdf"))
+                {f.delete();
+
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for(File f: files.listFiles()){
+            int i = f.getName().lastIndexOf('.');
+            if (i > 0) {
+                String extension = f.getName().substring(i + 1);
+                if (!extension.equals("pdf"))
+                    sb.append(f.getName() + "\n");
+                Log.v("FileManager", "file:" + f.getName());
+            }
+        }
+        tv.setText(sb.toString());
+        Log.v("FileManager","Done!");
+
+
+        Snackbar.make(view,"pdf file have been deleted",Snackbar.LENGTH_LONG).show();
+ //        Log.v("FileManager","Done!");
     }
 }
