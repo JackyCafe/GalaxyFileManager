@@ -141,7 +141,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!extension.equals("pdf"))
                     sb.append(f.getName() + "\n");
                 Log.v("FileManager", "file:" + f.getName());
-            }
+            }else
+            {sb.append(f.getName());}
         }
         tv.setText(sb.toString());
         Log.v("FileManager","Done!");
