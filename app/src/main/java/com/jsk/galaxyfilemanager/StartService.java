@@ -33,7 +33,7 @@ public class StartService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("Jacky","onStart");
+        Log.i("OnService","onStart");
         //                new PeriodicWorkRequest.Builder(FileManageWork.class, 12, TimeUnit.HOURS)
 
         PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(FileManageWork.class, 12, TimeUnit.HOURS)
