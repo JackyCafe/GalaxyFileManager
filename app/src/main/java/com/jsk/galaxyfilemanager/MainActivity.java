@@ -16,6 +16,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,13 +34,39 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv;
     private int PERMISSION_REQUEST_CODE = 200;
 
+    private TextView numText;
+    private int hours = 0;
+    private int min = 15;
+    private NumberPicker hourPicker,minPicker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv = findViewById(R.id.tv);
         path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
-        viewGroup = (ViewGroup) findViewById(R.id.vg);
+        hourPicker = (NumberPicker)findViewById(R.id.numberPicker_H);
+        minPicker = (NumberPicker) findViewById(R.id.numberPicker_M);
+        hourPicker.setMaxValue(12);
+        hourPicker.setMinValue(0);
+        minPicker.setMaxValue(59);
+        minPicker.setMinValue(0);
+
+        hourPicker.setValue(hours);
+        minPicker.setValue(min);
+        hourPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                hourPicker.setValue(newVal);
+            }
+        });
+        minPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                minPicker.setValue(newVal);
+            }
+        });
+
         if(checkPermission()){
             readTheFiles();
             Log.v("FileManager","have argee permission");
@@ -148,7 +175,17 @@ public class MainActivity extends AppCompatActivity {
         Log.v("FileManager","Done!");
 
 
-        Snackbar.make(view,"pdf file have been deleted",Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view,"pdf file 已被刪除",Snackbar.LENGTH_LONG).show();
  //        Log.v("FileManager","Done!");
+    }
+
+    public void send(View view) {
+        Intent it = new Intent(this,StartService.class);
+        hours = hourPicker.getValue();
+        min = minPicker.getValue();
+        Log.i("Jacky","MainActivity:"+hours+":"+min);
+        it.putExtra("hours",hours);
+        it.putExtra("min",min);
+        startService(it);
     }
 }
