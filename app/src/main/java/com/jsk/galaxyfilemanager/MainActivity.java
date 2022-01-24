@@ -31,6 +31,8 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     private File path;
@@ -39,59 +41,28 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    private TextView tv,tv_time,tv_setup;
     private int PERMISSION_REQUEST_CODE = 200;
 
     private TextView numText;
     private int hours = 0;
     private int min = 15;
-    private NumberPicker hourPicker,minPicker;
-    private JobScheduler mJobScheduler;
-
-    private SharedPreferences spf;
-    private SharedPreferences.Editor editor ;
     private Date date;
     private SimpleDateFormat sdf;
-
+    private Timer timer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tv = findViewById(R.id.tv);
-        tv_time = findViewById(R.id.tv_time);
-        tv_setup = findViewById(R.id.tv_setup);
-        path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
-        hourPicker = (NumberPicker)findViewById(R.id.numberPicker_H);
-        minPicker = (NumberPicker) findViewById(R.id.numberPicker_M);
-        hourPicker.setMaxValue(12);
-        hourPicker.setMinValue(0);
 
-        minPicker.setMinValue(15);
-        minPicker.setMaxValue(59);
-        hourPicker.setValue(0);
-        minPicker.setValue(min);
+        path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+
         date = new Date();
         sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        spf  = getSharedPreferences("my_data.log",MODE_PRIVATE);
-        editor = spf.edit();
+        timer = new Timer();
+        timer.schedule(new MyTask(path,"200"),0,5*1000*60);
 
-        String last_time = spf.getString("date","");
-        int param_hours = spf.getInt("hours",0);
-        int param_min = spf.getInt("min",0);
-        tv_time.setText("上次儲存時間: "+ last_time);
-        tv_setup.setText("儲存參數:"+param_hours+":"+param_min);
-        hourPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                hourPicker.setValue(newVal);
-            }
-        });
-        minPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                minPicker.setValue(newVal);
-            }
-        });
+
+
 
         if(checkPermission()){
             readTheFiles();
@@ -152,8 +123,7 @@ public class MainActivity extends AppCompatActivity {
             sb.append(f.getName()+"\n");
             Log.v("FileManager","file:"+f.getName());
         }
-        tv.setText(sb.toString());
-        Log.v("FileManager","Done!");
+         Log.v("FileManager","Done!");
 
 
     }
@@ -172,9 +142,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     public void delete(View view) {
         File files = new File(path.getPath());
-        tv.setText("");
         for(File f: files.listFiles()){
                 f.delete();
         }
@@ -182,41 +153,16 @@ public class MainActivity extends AppCompatActivity {
         for(File f: files.listFiles()){
                 sb.append(f.getName());
         }
-        tv.setText(sb.toString());
         Log.v("FileManager","Done!");
         Snackbar.make(view,"pdf file 已被刪除",Snackbar.LENGTH_LONG).show();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
-    public void send(View view) {
-        hours = hourPicker.getValue();
-        min = minPicker.getValue();
-        editor.putString("date",sdf.format(date));
-        editor.commit();
-        editor.putInt("hours",hours);
-        editor.commit();
-        editor.putInt("min",min);
-        editor.commit();
-        String last_time = spf.getString("date","");
-        int param_hours = spf.getInt("hours",0);
-        int param_min = spf.getInt("min",0);
-        tv_time.setText("上次儲存時間: "+ last_time);
-        tv_setup.setText("排程時間:"+param_hours+":"+param_min);
+     public void send(View view) {
+            if (timer != null){
+                timer.cancel();
+                timer.purge();
+                timer.schedule(new MyTask(path,"200"),0,5*1000*60);
 
-        mJobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        int jobId = 200;
-        JobInfo jobInfo = new JobInfo.Builder(jobId
-                , new ComponentName(getPackageName(), FileJobService.class.getName()))
-                .setMinimumLatency(1)
-                .setOverrideDeadline(1000*60*15)
-                .setImportantWhileForeground(false)
-                .setRequiresDeviceIdle(false)
-                .build();
-        mJobScheduler.schedule(jobInfo);
-//        Log.i("Jacky","MainActivity:"+hours+":"+min);
-//        Intent it = new Intent(this,StartService.class);
-//        it.putExtra("hours",hours);
-//        it.putExtra("min",min);
-//        startService(it);
+            }
     }
 }

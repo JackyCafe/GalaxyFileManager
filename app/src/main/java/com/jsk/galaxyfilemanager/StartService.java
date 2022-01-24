@@ -17,6 +17,7 @@ import androidx.work.WorkManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -24,48 +25,67 @@ public class StartService extends Service {
     public static final String SYNC_DATA_WORK_NAME = "sync_data_work_name";
     public static final long DELAY_TIME_MILLIS = 3000;
     public static final String TAG_SYNC_DATA = "TAG_SYNC_DATA";
-    PeriodicWorkRequest work;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
-
+    public File path;
+    Timer timer ;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("OnService","onStart");
-        int hours = intent.getIntExtra("hours",0);
-        int min = intent.getIntExtra("min",0);
-        Log.i("OnService",hours+":"+min);
-        //                new PeriodicWorkRequest.Builder(FileManageWork.class, 12, TimeUnit.HOURS)
+        path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+        timer = new Timer();
+        timer.schedule(new MyTask(path,"201"),0,1000);
 
-        if (hours!=0) {
-            work = new PeriodicWorkRequest.Builder(FileManageWork.class, hours, TimeUnit.HOURS)
-                    .addTag(TAG_SYNC_DATA)
-                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
-                    .build();
-            Log.i("OnService","do Hours:");
-
-        }else if(min!=0){
-            work = new PeriodicWorkRequest.Builder(FileManageWork.class, min, TimeUnit.MINUTES)
-                    .addTag(TAG_SYNC_DATA)
-                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
-                    .build();
-            Log.i("OnService","do Min:");
-        }else{
-            work = new PeriodicWorkRequest.Builder(FileManageWork.class, 1, TimeUnit.MINUTES)
-                    .addTag(TAG_SYNC_DATA)
-                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
-                    .build();
-            Log.i("OnService","default:");
-        }
-
-
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork("unique", ExistingPeriodicWorkPolicy.KEEP,work);
+//        int hours = intent.getIntExtra("hours",0);
+//        int min = intent.getIntExtra("min",0);
+//        Log.i("OnService",hours+":"+min);
+//        //                new PeriodicWorkRequest.Builder(FileManageWork.class, 12, TimeUnit.HOURS)
+//
+//        if (hours!=0) {
+//            work = new PeriodicWorkRequest.Builder(FileManageWork.class, hours, TimeUnit.HOURS)
+//                    .addTag(TAG_SYNC_DATA)
+//                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
+//                    .build();
+//            Log.i("OnService","do Hours:");
+//
+//        }else if(min!=0){
+//            work = new PeriodicWorkRequest.Builder(FileManageWork.class, min, TimeUnit.MINUTES)
+//                    .addTag(TAG_SYNC_DATA)
+//                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
+//                    .build();
+//            Log.i("OnService","do Min:");
+//        }else{
+//            work = new PeriodicWorkRequest.Builder(FileManageWork.class, 1, TimeUnit.MINUTES)
+//                    .addTag(TAG_SYNC_DATA)
+//                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.SECONDS)
+//                    .build();
+//            Log.i("OnService","default:");
+//        }
+//
+//
+//
+//        WorkManager.getInstance(this).enqueueUniquePeriodicWork("unique", ExistingPeriodicWorkPolicy.KEEP,work);
 
         return super.onStartCommand(intent, flags, startId);
 
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.i("OnService","onCreate");
+
+    }
+
+//    @Override
+//    public void onDestroy() {
+//        Log.i("OnService","onDestroy");
+////        super.onDestroy();
+////        timer.cancel();
+////        timer.purge();
+//
+//    }
 }

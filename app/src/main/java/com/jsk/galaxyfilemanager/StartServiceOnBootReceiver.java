@@ -49,20 +49,9 @@ public class StartServiceOnBootReceiver extends BroadcastReceiver {
             myNotification.flags = Notification.FLAG_AUTO_CANCEL;
             mgr.notify(10, myNotification);
         }
-        mJobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        int jobId = 201;
-        JobInfo jobInfo = new JobInfo.Builder(jobId
-                , new ComponentName(context.getPackageName(), FileJobService.class.getName()))
-                .setMinimumLatency(1)
-                .setOverrideDeadline(1000*60*15)
-                .setImportantWhileForeground(false)
-                .setRequiresDeviceIdle(false)
-                .build();
-        mJobScheduler.schedule(jobInfo);
-
-        mJobScheduler.schedule(jobInfo);
+//        Intent its = new Intent(context,StartService.class);
+//        context.startForegroundService(its);
         Log.v("Jacky","OnReceiver");
-
 
 
 
